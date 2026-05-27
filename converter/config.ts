@@ -1,0 +1,80 @@
+import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { resolve, dirname, isAbsolute, parse } from "node:path";
+
+export interface TokensSyncConfig {
+  out?: string;
+  preserve?: string[];
+  themeExtension?: string;
+}
+
+export interface ResolvedConfig {
+  config: TokensSyncConfig;
+  configPath: string | null;
+}
+
+export const CONFIG_FILENAME = "tokens-sync.config.json";
+
+export async function loadConfig(
+  explicitPath: string | undefined,
+  cwd: string,
+): Promise<ResolvedConfig> {
+  const path = explicitPath
+    ? isAbsolute(explicitPath) ? explicitPath : resolve(cwd, explicitPath)
+    : findConfigUp(cwd);
+
+  if (!path) return { config: {}, configPath: null };
+
+  if (!existsSync(path)) {
+    throw new Error(`Config file not found: ${path}`);
+  }
+
+  const raw = await readFile(path, "utf8");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    throw new Error(`Invalid JSON in ${path}: ${(err as Error).message}`);
+  }
+  return { config: validateConfig(parsed, path), configPath: path };
+}
+
+function findConfigUp(startDir: string): string | null {
+  let dir = resolve(startDir);
+  const root = parse(dir).root;
+  // bounded walk; never crosses the filesystem root
+  while (true) {
+    const candidate = resolve(dir, CONFIG_FILENAME);
+    if (existsSync(candidate)) return candidate;
+    if (dir === root) return null;
+    dir = dirname(dir);
+  }
+}
+
+function validateConfig(input: unknown, path: string): TokensSyncConfig {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    throw new Error(`${path} must be a JSON object`);
+  }
+  const obj = input as Record<string, unknown>;
+  const out: TokensSyncConfig = {};
+
+  if ("out" in obj) {
+    if (typeof obj.out !== "string" || obj.out.length === 0) {
+      throw new Error(`${path}: "out" must be a non-empty string`);
+    }
+    out.out = obj.out;
+  }
+  if ("preserve" in obj) {
+    if (!Array.isArray(obj.preserve) || !obj.preserve.every((x) => typeof x === "string")) {
+      throw new Error(`${path}: "preserve" must be an array of strings`);
+    }
+    out.preserve = obj.preserve as string[];
+  }
+  if ("themeExtension" in obj) {
+    if (typeof obj.themeExtension !== "string" || obj.themeExtension.length === 0) {
+      throw new Error(`${path}: "themeExtension" must be a non-empty string`);
+    }
+    out.themeExtension = obj.themeExtension;
+  }
+  return out;
+}
