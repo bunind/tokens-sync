@@ -9,21 +9,22 @@ Figma variables → [DTCG design tokens](https://design-tokens.github.io/communi
 - **Figma plugin** — [Raw Design Tokens Exporter](https://www.figma.com/community/plugin/1641072475539163081/raw-design-tokens-exporter) exports your file's variables as JSON.
 - **Converter** — transforms JSON into DTCG tokens, one file per collection, with aliases, semantics and modes.
 - **Claude Code skill** — runs the whole flow with `/tokens-sync` and shows a diff of what changed.
-- **tokens.css** — at the end of every sync, the pipeline also writes a browser-ready `tokens.css` next to your DTCG files.
+- **tokens.css** — at the end of every sync, the pipeline also writes a browser-ready `tokens.css`.
 
 ## Why do I need this?
 
 Your Figma variables are already the design system. They just don't look like one when Figma exports them, and most plugins bury them under another layer of UI and config. `/tokens-sync` is different — one command, and your variables land in code as structured DTCG collections, with modes, aliases, and scope-aware naming semantics.
 
-- **Every mode survives the trip.** Light/dark, brand themes, desktop/mobile — each one lands in DTCG under a configurable `$extensions` key, ready to drive runtime theming.
+- **Modes & aliases.** All modes survive the sync, configurable via the `$extensions` key.
   
-- **Aliases stay aliases, not flat values.** When `color.button.bg` points at `color.brand.primary` in Figma, it does the same in your tokens. The semantic layer your team relies on is kept safe after the sync.
+- **Token semantics & taxonomy.** When `color.button.bg` points at `color.brand.primary` in Figma, it does the same in your tokens. The semantic layer your team relies on is kept safe after the sync.
   
-- **Every sync shows its work.** The Claude skill prints a token-by-token diff (`+ added`, `− removed`) after each run, so design system changes never reach code as a surprise.
+- **Sync comparison.** The Claude skill prints a token-by-token diff (`+ added`, `− removed`) after each run, so design system changes stay in sync.
+
+- **tokens.css.** A single `tokens.css` file that unifies all of a project's tokens.
   
 - **Headless.** Native TypeScript on Node ≥22.6 — no bundler, no UI, no build step. Just clone, install, sync.
 
-- **Code gets a CSS file for free.** As the last step of every sync, the pipeline emits a single `tokens.css` — a `:root` block of defaults plus override selectors for light/dark, platform, and size modes. Drop it into any project and theme straight from CSS variables, no build step.
 
 ## Using as a Claude Code skill
 
@@ -43,7 +44,7 @@ Open [Raw Design Tokens Exporter](https://www.figma.com/community/plugin/1641072
 
 ### 2. Export variables from Figma
 
-In your Figma file, run **Plugins → Raw Design Tokens Exporter**. It exports `tokens-<fileKey>-<timestamp>.json` to `~/Downloads`, or any folder of your choice.
+In your Figma file, run **Plugins → Raw Design Tokens Exporter**. The plugin exports `tokens-<fileKey>-<timestamp>.json` to `~/Downloads`, or any folder of your choice.
 
 ### 3. Convert to DTCG tokens
 
@@ -52,7 +53,7 @@ cd converter
 node cli.ts /path/to/tokens-<fileKey>-<timestamp>.json
 ```
 
-You get one `*.tokens.json` file per Figma collection, written next to the input (override with `--out`).
+One `*.tokens.json` file per Figma collection, written next to the input (override with `--out`).
 
 #### CLI options
 
