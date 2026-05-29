@@ -1,0 +1,12 @@
+{
+  "name": "Raw Tokens Exporter",
+  "id": "1641072475539163081",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  }
+}

@@ -52,3 +52,37 @@ export interface DtcgFile {
   path: string;
   content: Record<string, unknown>;
 }
+
+// ── CSS emit stage ────────────────────────────────────────────────────────
+
+export type SelectorStrategy = "static" | "theme" | "platform" | "component";
+
+/**
+ * One DTCG leaf, flattened. `path` is the dotted address including the
+ * collection slug as its first segment (e.g. "color.blue.light.6"). `value`
+ * is the default-mode value (literal or a "{ref}" string). `modes`, when
+ * present, maps every mode name to its value (default mode included).
+ */
+export interface TokenNode {
+  path: string;
+  slug: string;
+  $type: string;
+  value: unknown;
+  modes?: Record<string, unknown>;
+}
+
+/** Per-collection override of the convention-based selector classification. */
+export interface CssModeOverride {
+  strategy?: SelectorStrategy;
+  attr?: string;
+  default?: string;
+}
+
+export interface CssEmitOptions {
+  /** $extensions key holding multi-mode values. Defaults to "default.modes". */
+  themeExtension?: string;
+  /** Per-collection-slug escape hatch over the convention. */
+  cssModes?: Record<string, CssModeOverride>;
+  /** Sink for non-fatal diagnostics. Defaults to a no-op (keeps emit pure). */
+  warn?: (message: string) => void;
+}

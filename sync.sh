@@ -41,4 +41,12 @@ echo "::AFTER_BEGIN::"
 emit_snapshot
 echo "::AFTER_END::"
 
+# Emit a browser-ready tokens.css into the user-selected folder, alongside the
+# DTCG tree the converter just wrote. Best-effort and silent: only runs after a
+# clean conversion, sends all output to /dev/null, and never changes the exit
+# code the skill keys off — so the skill UI is unaffected.
+if [ "$CE" -eq 0 ]; then
+  node "$RR/converter/cli.ts" css --tokens "$TF" --out "$TF/tokens.css" >/dev/null 2>&1 || true
+fi
+
 exit $CE

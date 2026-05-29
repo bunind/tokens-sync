@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+<script>
+  window.onmessage = (e) => {
+    const m = e.data.pluginMessage;
+    let url;
+    try {
+      url = URL.createObjectURL(new Blob([m.json], { type: "application/json" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = m.filename;
+      a.click();
+    } catch (err) {
+      console.error("[Raw Tokens Exporter] download failed", err);
+    } finally {
+      if (url) URL.revokeObjectURL(url);
+      parent.postMessage({ pluginMessage: { type: "done" } }, "*");
+    }
+  };
+</script>
+</body>
+</html>

@@ -1,11 +1,16 @@
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { resolve, dirname, isAbsolute, parse } from "node:path";
+import type { CssModeOverride, SelectorStrategy } from "./types.ts";
+
+const CSS_STRATEGIES: SelectorStrategy[] = ["static", "theme", "platform", "component"];
 
 export interface TokensSyncConfig {
   out?: string;
   preserve?: string[];
   themeExtension?: string;
+  cssOut?: string;
+  cssModes?: Record<string, CssModeOverride>;
 }
 
 export interface ResolvedConfig {
@@ -76,5 +81,50 @@ function validateConfig(input: unknown, path: string): TokensSyncConfig {
     }
     out.themeExtension = obj.themeExtension;
   }
+  if ("cssOut" in obj) {
+    if (typeof obj.cssOut !== "string" || obj.cssOut.length === 0) {
+      throw new Error(`${path}: "cssOut" must be a non-empty string`);
+    }
+    out.cssOut = obj.cssOut;
+  }
+  if ("cssModes" in obj) {
+    out.cssModes = validateCssModes(obj.cssModes, path);
+  }
   return out;
+}
+
+function validateCssModes(input: unknown, path: string): Record<string, CssModeOverride> {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    throw new Error(`${path}: "cssModes" must be an object keyed by collection slug`);
+  }
+  const result: Record<string, CssModeOverride> = {};
+  for (const [slug, raw] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+      throw new Error(`${path}: "cssModes.${slug}" must be an object`);
+    }
+    const entry = raw as Record<string, unknown>;
+    const override: CssModeOverride = {};
+    if ("strategy" in entry) {
+      if (!CSS_STRATEGIES.includes(entry.strategy as SelectorStrategy)) {
+        throw new Error(
+          `${path}: "cssModes.${slug}.strategy" must be one of ${CSS_STRATEGIES.join(", ")}`,
+        );
+      }
+      override.strategy = entry.strategy as SelectorStrategy;
+    }
+    if ("attr" in entry) {
+      if (typeof entry.attr !== "string" || entry.attr.length === 0) {
+        throw new Error(`${path}: "cssModes.${slug}.attr" must be a non-empty string`);
+      }
+      override.attr = entry.attr;
+    }
+    if ("default" in entry) {
+      if (typeof entry.default !== "string" || entry.default.length === 0) {
+        throw new Error(`${path}: "cssModes.${slug}.default" must be a non-empty string`);
+      }
+      override.default = entry.default;
+    }
+    result[slug] = override;
+  }
+  return result;
 }

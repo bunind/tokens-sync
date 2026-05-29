@@ -7,12 +7,16 @@ import { writeFiles } from "./writer.ts";
 import { loadConfig } from "./config.ts";
 import { resolveInputPath } from "./input.ts";
 import { runInit } from "./init.ts";
+import { loadDtcg } from "./dtcg-load.ts";
+import { emitCss } from "./css.ts";
+import { writeText } from "./writeText.ts";
 import type { FigmaVarsExport } from "./types.ts";
 
 const DEFAULT_PRESERVE = ["manifest.json", "resolver/**"];
 
 const USAGE = `Usage:
   tokens-sync <file-key-or-input-path> [options]
+  tokens-sync css [options]
   tokens-sync --init
 
 Arguments:
@@ -29,6 +33,14 @@ Options:
   --dry-run                  Plan writes without touching the filesystem.
   --init                     Scaffold tokens-sync.config.json in cwd.
   -h, --help                 Show this message.
+
+css subcommand (DTCG tree → one browser-ready tokens.css):
+  --tokens <dir>             DTCG root to read. Defaults to cwd.
+  --out <path>               Output CSS file. Defaults to config.cssOut,
+                             else <tokens>/../dist/tokens.css.
+  --config <path>            Explicit config file (reused as-is).
+  --theme-extension <key>    $extensions key for multi-mode values.
+  --dry-run                  Plan the write without touching the filesystem.
 `;
 
 async function main(): Promise<number> {
@@ -38,6 +50,7 @@ async function main(): Promise<number> {
       input: { type: "string" },
       config: { type: "string" },
       out: { type: "string" },
+      tokens: { type: "string" },
       "theme-extension": { type: "string" },
       "dry-run": { type: "boolean" },
       init: { type: "boolean" },
@@ -52,6 +65,10 @@ async function main(): Promise<number> {
   }
 
   const cwd = process.cwd();
+
+  if (positionals[0] === "css") {
+    return runCss(values, cwd);
+  }
 
   if (values.init) {
     const result = await runInit(cwd);
@@ -147,6 +164,81 @@ async function main(): Promise<number> {
   for (const p of plan.unchanged) process.stdout.write(`  = ${p} (unchanged)\n`);
   for (const p of plan.preserved) process.stdout.write(`  - ${p} (preserved, skipped)\n`);
   return 0;
+}
+
+interface CssCliValues {
+  tokens?: string;
+  out?: string;
+  config?: string;
+  "theme-extension"?: string;
+  "dry-run"?: boolean;
+}
+
+async function runCss(values: CssCliValues, cwd: string): Promise<number> {
+  let configResult;
+  try {
+    configResult = await loadConfig(values.config, cwd);
+  } catch (err) {
+    process.stderr.write(`Error: ${(err as Error).message}\n`);
+    return 1;
+  }
+  const { config, configPath } = configResult;
+  const configBase = configPath ? dirname(configPath) : cwd;
+
+  const tokensDir = values.tokens ? absolutize(values.tokens, cwd) : cwd;
+
+  let outPath: string;
+  if (values.out) {
+    outPath = absolutize(values.out, cwd);
+  } else if (config.cssOut) {
+    outPath = absolutize(config.cssOut, configBase);
+  } else {
+    outPath = resolve(tokensDir, "../dist/tokens.css");
+  }
+
+  const themeExtension =
+    values["theme-extension"] ?? config.themeExtension ?? DEFAULT_THEME_EXTENSION;
+  const dryRun = values["dry-run"] === true;
+
+  const warnings: string[] = [];
+  const warn = (m: string) => warnings.push(m);
+
+  let files;
+  try {
+    files = await loadDtcg(tokensDir, { warn });
+  } catch (err) {
+    process.stderr.write(`Error: ${(err as Error).message}\n`);
+    return 1;
+  }
+  if (files.length === 0) {
+    process.stderr.write(`Error: no *.tokens.json found under ${tokensDir}\n`);
+    return 1;
+  }
+
+  const css = emitCss(files, { themeExtension, cssModes: config.cssModes, warn });
+
+  let plan;
+  try {
+    plan = await writeText(outPath, css, { dryRun });
+  } catch (err) {
+    process.stderr.write(`Error: cannot write ${outPath}\n  ${(err as Error).message}\n`);
+    return 1;
+  }
+
+  for (const w of warnings) process.stderr.write(`[tokens-sync css] WARN: ${w}\n`);
+
+  if (plan.unchanged) {
+    process.stdout.write(`= ${outPath} (unchanged)\n`);
+  } else {
+    const verb = dryRun ? "Would write" : "Wrote";
+    process.stdout.write(`${verb} ${outPath}\n`);
+  }
+  if (configPath) process.stdout.write(`Config: ${configPath}\n`);
+  return 0;
+}
+
+function absolutize(p: string, base: string): string {
+  return isAbsolute(p) ? p : resolve(base, p);
 }
 
 function pickOutDir(opts: {

@@ -1,0 +1,12 @@
+{
+  "name": "figma-tokens-sync-plugin",
+  "version": "0.6.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json && cp ui.html dist/ui.html"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.108.0",
+    "typescript": "^5.4.0"
+  }
+}

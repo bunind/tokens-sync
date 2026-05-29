@@ -4,11 +4,12 @@ Turn Figma variables into production-ready DTCG design tokens.
 
 Figma variables → [DTCG design tokens](https://design-tokens.github.io/community-group/format/) · headless · no build step · no API required.
 
-**Three pieces, one pipeline:**
+**Four pieces, one pipeline:**
 
 - **Figma plugin** — [Raw Design Tokens Exporter](https://www.figma.com/community/plugin/1641072475539163081/raw-design-tokens-exporter) exports your file's variables as JSON.
 - **Converter** — transforms JSON into DTCG tokens, one file per collection, with aliases, semantics and modes.
 - **Claude Code skill** — runs the whole flow with `/tokens-sync` and shows a diff of what changed.
+- **tokens.css** — at the end of every sync, the pipeline also writes a browser-ready `tokens.css` next to your DTCG files.
 
 ## Why do I need this?
 
@@ -22,6 +23,8 @@ Your Figma variables are already the design system. They just don't look like on
   
 - **Headless.** Native TypeScript on Node ≥22.6 — no bundler, no UI, no build step. Just clone, install, sync.
 
+- **Code gets a CSS file for free.** As the last step of every sync, the pipeline emits a single `tokens.css` — a `:root` block of defaults plus override selectors for light/dark, platform, and size modes. Drop it into any project and theme straight from CSS variables, no build step.
+
 ## Using as a Claude Code skill
 
 If you use [Claude Code](https://claude.com/claude-code), clone this repo into your skills folder:
@@ -30,7 +33,7 @@ If you use [Claude Code](https://claude.com/claude-code), clone this repo into y
 git clone https://github.com/bunind/tokens-sync.git ~/.claude/skills/tokens-sync
 ```
 
-Then in any Claude Code session, run `/tokens-sync`. The skill walks you through exporting and syncing. On each subsequent run, it shows exactly which tokens were added or removed in the selected directory.
+Then in any Claude Code session, run `/tokens-sync`. The skill walks you through exporting and syncing. On each subsequent run, it shows exactly which tokens were added or removed in the selected directory, and writes an up-to-date `tokens.css` alongside them.
 
 ## Full installation
 
