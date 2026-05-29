@@ -9,7 +9,7 @@ Figma variables → [DTCG design tokens](https://design-tokens.github.io/communi
 - **Figma plugin** — [Raw Design Tokens Exporter](https://www.figma.com/community/plugin/1641072475539163081/raw-design-tokens-exporter) exports your file's variables as JSON.
 - **Converter** — transforms JSON into DTCG tokens, one file per collection, with aliases, semantics and modes.
 - **Claude Code skill** — runs the whole flow with `/tokens-sync` and shows a diff of what changed.
-- **tokens.css** — The /tokens-syncc also writes a browser-ready `tokens.css`.
+- **tokens.css** — `/tokens-sync` also writes a browser-ready `tokens.css`.
 
 ## Why do I need this?
 
