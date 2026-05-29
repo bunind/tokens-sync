@@ -9,7 +9,7 @@ Figma variables → [DTCG design tokens](https://design-tokens.github.io/communi
 - **Figma plugin** — [Raw Design Tokens Exporter](https://www.figma.com/community/plugin/1641072475539163081/raw-design-tokens-exporter) exports your file's variables as JSON.
 - **Converter** — transforms JSON into DTCG tokens, one file per collection, with aliases, semantics and modes.
 - **Claude Code skill** — runs the whole flow with `/tokens-sync` and shows a diff of what changed.
-- **tokens.css** — at the end of every sync, the pipeline also writes a browser-ready `tokens.css`.
+- **tokens.css** — The /tokens-syncc also writes a browser-ready `tokens.css`.
 
 ## Why do I need this?
 
@@ -21,9 +21,9 @@ Your Figma variables are already the design system. They just don't look like on
   
 - **Sync comparison.** The Claude skill prints a token-by-token diff (`+ added`, `− removed`) after each run, so design system changes stay in sync.
 
-- **tokens.css.** A single `tokens.css` file that unifies all of a project's tokens.
+- **tokens.css.** One `tokens.css` file that unifies all of a project's tokens into a single source of truth.
   
-- **Headless.** Native TypeScript on Node ≥22.6 — no bundler, no UI, no build step. Just clone, install, sync.
+- **Stack.** Native TypeScript on Node ≥22.6 — no bundler, no UI, no build step. Just clone, install, sync.
 
 
 ## Using as a Claude Code skill
