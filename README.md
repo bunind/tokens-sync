@@ -88,11 +88,6 @@ Get started:
 node cli.ts --init
 ```
 
-## Requirements
-
-- **Node ≥22.6** — the converter runs TypeScript natively, no build step. *(On Node 22.6–22.18, pass `--experimental-strip-types` to `node`; Node ≥23 strips by default.)*
-- **Figma** — any account works. The plugin runs from Figma Community; no developer mode needed.
-
 ### Repo layout
 
 ```
@@ -113,12 +108,10 @@ node cli.ts --init
 └── LICENSE
 ```
 
-### Converter tests
+## Requirements
 
-```bash
-cd converter
-node --test *.test.ts
-```
+- **Node ≥22.6** — the converter runs TypeScript natively, no build step. *(On Node 22.6–22.18, pass `--experimental-strip-types` to `node`; Node ≥23 strips by default.)*
+- **Figma** — any account works. The plugin runs from Figma Community; no developer mode needed.
 
 ## License
 
