@@ -88,26 +88,6 @@ Get started:
 node cli.ts --init
 ```
 
-### Repo layout
-
-```
-.
-├── converter/         Converts variables to DTCG token tree
-│   ├── cli.ts         entry point
-│   ├── mapper.ts      variables to tokens mapping tool
-│   ├── writer.ts      writes tokens in the selected folder
-│   ├── config.ts      converter settings
-│   ├── input.ts       user input scheme
-│   ├── init.ts        --init scaffolder
-│   ├── glob.ts        tokens paths filter
-│   ├── types.ts       shared token semantics
-│   └── *.test.ts      node:test suites
-│
-├── skill.md           Claude Code skill (invoked via /tokens-sync)
-├── sync.sh            skill pipeline
-└── LICENSE
-```
-
 ## Requirements
 
 - **Node ≥22.6** — the converter runs TypeScript natively, no build step. *(On Node 22.6–22.18, pass `--experimental-strip-types` to `node`; Node ≥23 strips by default.)*
