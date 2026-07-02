@@ -126,6 +126,6 @@ node --test *.test.ts
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+[MIT LICENSE](LICENSE)
 
 © 2026 Dmitrii Bunin — [BuninUX](https://buninux.com)
