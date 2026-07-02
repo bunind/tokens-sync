@@ -72,7 +72,7 @@ Options:
 
 #### Config file
 
-Create `tokens-sync.config.json` next to your tokens folder to lock in flags:
+Create `tokens-sync.config.json` next to your tokens folder to lock in:
 
 ```json
 {
@@ -81,8 +81,6 @@ Create `tokens-sync.config.json` next to your tokens folder to lock in flags:
   "preserve": ["manifest.json", "resolver/**"]
 }
 ```
-
-When the converter writes a token file, it overwrites whatever was there before. This keeps your tokens in sync with Figma.
 
 Get started:
 
