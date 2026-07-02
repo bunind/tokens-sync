@@ -26,7 +26,7 @@ Your Figma variables are already the design system. They just don't look like on
 - **Stack.** Native TypeScript on Node ≥22.6 — no bundler, no UI, no build step. Just clone, install, sync.
 
 
-## Using as a Claude Code skill
+## Claude Code skill Installation
 
 If you use [Claude Code](https://claude.com/claude-code), clone this repo into your skills folder:
 
