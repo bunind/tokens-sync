@@ -25,8 +25,13 @@ export function mapToDtcg(
     themeExtension,
   };
 
+  const allModeNames = new Set(
+    figmaExport.collections.flatMap((c) => c.modes.map((m) => m.name.toLowerCase())),
+  );
+
   const byCollection = new Map<string, FigmaVariable[]>();
   for (const v of figmaExport.variables) {
+    if (isVariantSwitcher(v, allModeNames)) continue;
     const arr = byCollection.get(v.collectionId) ?? [];
     arr.push(v);
     byCollection.set(v.collectionId, arr);
@@ -82,6 +87,19 @@ function buildLeaf(
   }
 
   return leaf;
+}
+
+// Figma variant-switchers (STRING vars whose literal values are mode/variant
+// names, e.g. badge/item/size: XSmall → "XSmall") drive nested instance props
+// in Figma — a mechanism, not design tokens. They stay in Figma, never export.
+function isVariantSwitcher(v: FigmaVariable, allModeNames: Set<string>): boolean {
+  if (v.type !== "STRING") return false;
+  if (hasScope(v.scopes, "FONT_FAMILY") || hasScope(v.scopes, "FONT_STYLE")) return false;
+  const literals = Object.values(v.valuesByMode).filter((mv) => mv.kind === "literal");
+  if (literals.length === 0) return false;
+  return literals.every(
+    (mv) => typeof mv.value === "string" && allModeNames.has(mv.value.toLowerCase()),
+  );
 }
 
 function encodeValue(value: FigmaModeValue | undefined, ctx: MapperContext): unknown {

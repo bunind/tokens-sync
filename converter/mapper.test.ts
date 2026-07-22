@@ -192,4 +192,49 @@ describe("mapToDtcg", () => {
     assert.equal(t.typography.family.sans.$type, "fontFamily");
     assert.equal(t.typography.weight.bold.$type, "fontWeight");
   });
+
+  it("drops Figma variant-switcher STRING vars, keeps other strings", () => {
+    const fixture: FigmaVarsExport = {
+      fileKey: "ABC",
+      collections: [
+        {
+          id: "c1",
+          name: "Badge",
+          defaultModeId: "m1",
+          modes: [
+            { id: "m1", name: "Small" },
+            { id: "m2", name: "Large" },
+          ],
+        },
+      ],
+      variables: [
+        {
+          id: "v1",
+          name: "badge/item/size",
+          collectionId: "c1",
+          type: "STRING",
+          scopes: ["ALL_SCOPES"],
+          valuesByMode: {
+            m1: { kind: "literal", value: "Small" },
+            m2: { kind: "literal", value: "Large" },
+          },
+        },
+        {
+          id: "v2",
+          name: "badge/stroke-style",
+          collectionId: "c1",
+          type: "STRING",
+          scopes: [],
+          valuesByMode: {
+            m1: { kind: "literal", value: "solid" },
+            m2: { kind: "literal", value: "solid" },
+          },
+        },
+      ],
+    };
+    const files = mapToDtcg(fixture);
+    const t = files[0]!.content as { badge: Record<string, unknown> };
+    assert.equal(t.badge.item, undefined);
+    assert.ok(t.badge["stroke-style"]);
+  });
 });
