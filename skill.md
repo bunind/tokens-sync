@@ -226,7 +226,8 @@ bash "<repoRoot>/sync.sh" "<tokens-folder>" "<repoRoot>"
 2. Snapshots every existing `*.tokens.json` under that folder (BEFORE).
 3. Runs `node "<repoRoot>/converter/cli.ts" "<raw-json-path>"`.
 4. Snapshots every `*.tokens.json` again (AFTER).
-5. Streams everything to stdout with markers, and exits with the converter's exit code.
+5. On a clean conversion (converter exit 0), regenerates `tokens.css` from the updated DTCG tree via `converter/cli.ts css --tokens <folder> --out <folder>/tokens.css`, wrapping its output in CSS markers. This keeps `tokens.css` in sync with the tokens on every successful run.
+6. Streams everything to stdout with markers, and exits with the converter's exit code (the CSS step never changes the overall exit code).
 
 ### Output markers
 
@@ -237,6 +238,7 @@ The script prints a stream of line-prefixed markers. Parse them in order:
 - `::BEFORE_BEGIN::` … `::BEFORE_END::` — pre-conversion snapshot block.
 - `::CONVERT_BEGIN::` … `::CONVERT_END::<exit-code>` — converter stdout/stderr, followed by the exit code on the END marker.
 - `::AFTER_BEGIN::` … `::AFTER_END::` — post-conversion snapshot block.
+- `::CSS_BEGIN::` … `::CSS_END::<exit-code>` — `tokens.css` regeneration output, followed by its exit code on the END marker. Present only when the conversion exited 0.
 
 Inside a snapshot block, each file is wrapped:
 ```
@@ -273,6 +275,14 @@ The collection display name is the slug derived from the file path's first segme
 - After the tree, print a single summary line. Use the correct plural form: `1 collection unchanged` (singular) or `N collections unchanged` (plural). Omit the line entirely if `N == 0`.
 - If every collection is unchanged, skip the tree and the unchanged-count line entirely and print only: `Already in sync — no changes to write.`
 - Do not print the converter's raw `Wrote/= /unchanged/preserved` lines on success — the tree replaces them. Always preserve the converter's stderr on non-zero exit.
+
+### tokens.css confirmation (always shown on a successful sync)
+
+Every successful sync MUST tell the user that `tokens.css` was regenerated, so they know it stays in sync with the converted tokens. Read the `::CSS_BEGIN::` … `::CSS_END::<exit-code>` block and print one line as the **last** line of the post-sync output — after the tree, the unchanged-count line, or the `Already in sync` line:
+
+- `::CSS_END::0` → print: `tokens.css updated` (this line is mandatory; print it even when token paths are unchanged and even on the `Already in sync` branch).
+- `::CSS_END::<non-zero>` → print: `⚠ tokens.css regeneration FAILED — tokens.css is now STALE`, then surface the captured output between the CSS markers verbatim. Do not treat this as a failed sync (the DTCG files were written and are valid) — but the warning must be prominent so the user knows to re-run.
+- If no CSS block is present (conversion did not exit 0), omit the line — the non-zero `::CONVERT_END::` path already stopped before reaching here.
 
 ### Example
 

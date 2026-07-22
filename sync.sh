@@ -41,12 +41,16 @@ echo "::AFTER_BEGIN::"
 emit_snapshot
 echo "::AFTER_END::"
 
-# Emit a browser-ready tokens.css into the user-selected folder, alongside the
-# DTCG tree the converter just wrote. Best-effort and silent: only runs after a
-# clean conversion, sends all output to /dev/null, and never changes the exit
-# code the skill keys off — so the skill UI is unaffected.
+# Regenerate browser-ready tokens.css from the DTCG tree the converter just
+# wrote, so tokens.css always stays in sync with the latest tokens. Runs only
+# after a clean conversion. Output is captured and surfaced via markers so the
+# skill can confirm the write — or report a failure — to the user. The overall
+# script exit code stays the converter's, so the skill's success/diff logic is
+# unaffected.
 if [ "$CE" -eq 0 ]; then
-  node "$RR/converter/cli.ts" css --tokens "$TF" --out "$TF/tokens.css" >/dev/null 2>&1 || true
+  echo "::CSS_BEGIN::"
+  node "$RR/converter/cli.ts" css --tokens "$TF" --out "$TF/tokens.css" 2>&1
+  echo "::CSS_END::$?"
 fi
 
 exit $CE
