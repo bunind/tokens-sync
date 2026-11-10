@@ -93,6 +93,10 @@ node cli.ts --init
 - **Node ≥22.6** — the converter runs TypeScript natively, no build step. *(On Node 22.6–22.18, pass `--experimental-strip-types` to `node`; Node ≥23 strips by default.)*
 - **Figma** — any account works. The plugin runs from Figma Community; no developer mode needed.
 
+## Further reading
+
+- [Design token naming convention: the GTC model](https://buninux.com/design-tokens) — how to structure global, theme and component tokens so the aliases and modes you sync stay readable in code and for AI agents.
+
 ## License
 
 [MIT LICENSE](LICENSE)
