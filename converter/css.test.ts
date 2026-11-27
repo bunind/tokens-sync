@@ -230,7 +230,7 @@ describe("emitCss snapshot", () => {
   --theme-text-default: var(--color-base-black);
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"], :root.dark {
   --theme-surface-page: var(--color-base-black);
   --theme-text-default: var(--color-base-white);
 }
