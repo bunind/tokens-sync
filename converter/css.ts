@@ -69,12 +69,6 @@ export function emitCss(files: DtcgFile[], opts: CssEmitOptions = {}): string {
 
     for (const mode of modeNames) {
       if (mode === cls.defaultMode) continue;
-      const selector = selectorFor(cls, slug, mode);
-      const block = blocks.get(selector) ?? {
-        phase: PHASE[cls.strategy as keyof typeof PHASE] ?? PHASE.platform,
-        selector,
-        decls: new Map<string, string>(),
-      };
       for (const node of collectionNodes) {
         if (!node.modes) continue;
         if (!(mode in node.modes)) {
@@ -83,12 +77,19 @@ export function emitCss(files: DtcgFile[], opts: CssEmitOptions = {}): string {
         }
         const modeValue = node.modes[mode];
         if (modeValue === node.value) continue; // identical to :root → inherit
+        const name = slug === "component" ? slugOf(node.path.split(".")[1] ?? slug) : slug;
+        const selector = selectorFor(cls, name, mode);
+        const block = blocks.get(selector) ?? {
+          phase: PHASE[cls.strategy as keyof typeof PHASE] ?? PHASE.platform,
+          selector,
+          decls: new Map<string, string>(),
+        };
         block.decls.set(
           varName(node.path),
           renderValue(node.$type, modeValue, knownVars, warn, `${node.path}@${mode}`),
         );
+        blocks.set(selector, block);
       }
-      if (block.decls.size > 0) blocks.set(selector, block);
     }
   }
 
@@ -219,7 +220,7 @@ function selectorFor(cls: Classification, slug: string, mode: string): string {
 // ── render ─────────────────────────────────────────────────────────────────
 
 export function varName(path: string): string {
-  return "--" + path.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return "--" + path.toLowerCase().replace(/\./g, "-").replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
 export function renderValue(
