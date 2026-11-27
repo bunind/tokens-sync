@@ -254,6 +254,7 @@ function parseRef(s: string): string | null {
 
 function renderString($type: string, value: string): string {
   if ($type === "color") return value; // hex (incl. #rrggbbaa) — emit verbatim
+  if (/^-?[\d.]+[a-z%]*$/i.test(value)) return value; // "32px", "1.5rem", "50%": CSS already, quoting breaks it
   // Bare CSS ident (e.g. Inter, Regular, Medium) passes through; anything with
   // spaces or punctuation (e.g. "pt serif") gets quoted for valid CSS.
   if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(value)) return value;
