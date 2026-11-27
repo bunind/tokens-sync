@@ -211,6 +211,8 @@ function selectorFor(cls: Classification, slug: string, mode: string): string {
   if (cls.strategy === "component") {
     return `[data-component="${slug}"][data-${cls.attr}="${mode}"]`;
   }
+  // .dark too: shadcn and Tailwind switch theme with a class on <html>.
+  if (cls.attr === "theme") return `:root[data-theme="${mode}"], :root.${mode}`;
   return `:root[data-${cls.attr}="${mode}"]`;
 }
 

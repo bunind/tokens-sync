@@ -27,7 +27,9 @@ export async function loadDtcg(dir: string, opts: LoadDtcgOptions = {}): Promise
     throw new Error(`cannot read tokens directory at ${dir}: ${(err as Error).message}`);
   }
 
-  const relPaths = entries.filter((p) => p.endsWith(TOKENS_SUFFIX)).sort();
+  let relPaths = entries.filter((p) => p.endsWith(TOKENS_SUFFIX)).sort();
+  // No *.tokens.json: a tree of plain *.json token files (e.g. a GTC tree).
+  if (!relPaths.length) relPaths = entries.filter((p) => p.endsWith(".json")).sort();
   const files: DtcgFile[] = [];
 
   for (const relPath of relPaths) {
