@@ -244,6 +244,36 @@ describe("emitCss snapshot", () => {
   });
 });
 
+describe("emitCss GTC component group", () => {
+  it("scopes size modes to each component under component.*", () => {
+    const files: DtcgFile[] = [
+      {
+        path: "component/button/button.json",
+        content: {
+          component: {
+            button: {
+              size: { $type: "dimension", $value: "36px", $extensions: { mode: { medium: "36px", small: "32px" } } },
+            },
+            card: {
+              gap: { $type: "dimension", $value: "24px", $extensions: { mode: { medium: "24px", small: "16px" } } },
+            },
+          },
+        },
+      },
+    ];
+    const css = emitCss(files, { themeExtension: "mode" });
+    assert.match(css, /\[data-component="button"\]\[data-size="small"\] \{\n  --component-button-size: 32px;\n\}/);
+    assert.match(css, /\[data-component="card"\]\[data-size="small"\] \{\n  --component-card-gap: 16px;\n\}/);
+  });
+});
+
+describe("varName negative keys", () => {
+  it("keeps size-unit.-12 apart from size-unit.12", () => {
+    assert.equal(varName("global.size-unit.-12"), "--global-size-unit--12");
+    assert.equal(varName("global.size-unit.12"), "--global-size-unit-12");
+  });
+});
+
 describe("renderValue dimension strings", () => {
   it("emits \"32px\" unquoted", () => {
     assert.equal(renderValue("dimension", "32px", new Set()), "32px");
