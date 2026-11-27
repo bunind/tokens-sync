@@ -243,3 +243,9 @@ describe("emitCss snapshot", () => {
     assert.equal(emitCss(files, { themeExtension: THEME_EXT }), expected);
   });
 });
+
+describe("renderValue dimension strings", () => {
+  it("emits \"32px\" unquoted", () => {
+    assert.equal(renderValue("dimension", "32px", new Set()), "32px");
+  });
+});
